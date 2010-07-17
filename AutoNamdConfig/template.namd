@@ -1,0 +1,76 @@
+#  John Eargle
+#  DATE
+#  
+#  Using 5 Cl placed at 6.5
+#  Grubmueller solvate for 5 layers, VMD solvate for 5 A boundary
+#**********************************************************************
+
+set inpname	        eqPREVRUNs4-1
+set outname	        eqCURRRUNs4-1
+firsttimestep	        PREVTIMESTEP
+set temperature         298
+set pressure            1.01325
+
+# Input 
+coordinates		../S4-1W.pdb
+structure		../S4-1W.psf
+BinCoordinates          $inpname.coor
+BinVelocities           $inpname.vel
+ExtendedSystem          $inpname.xsc
+
+# Parameter Files
+parameters              ../par_all27_prot_na_rea.prm
+parameters		../par_custom.prm
+paratypecharmm          on
+
+# Force Field Parameters
+exclude                 scaled1-4
+1-4scaling              1.0
+cutoff                  12
+switching               On
+switchdist              10
+pairlistdist            14
+margin			2
+
+# Integrator Parameters
+timestep                1.0
+numsteps		NEXTTIMESTEP
+nonbondedFreq           2
+PME                     yes
+PMEGridSizeX            64
+PMEGridSizeY            64
+PMEGridSizeZ            64
+fullElectFrequency      4
+stepspercycle           20
+
+# Temperature Control for NPT Ensemble
+langevin                on             # do langevin dynamics
+#langevinFile            tempfile.pdb 
+#langevinCol             O
+langevinTemp            $temperature   # bath temperature
+langevinDamping         5              # damping coefficient (gamma) of 5/ps
+langevinHydrogen        no             # don't couple langevin bath to hydrogens
+
+# Pressure Control for NPT Ensemble
+useFlexibleCell		no
+langevinPiston		on
+langevinPistonTarget	$pressure
+langevinPistonPeriod	200
+langevinPistonDecay	100
+langevinPistonTemp      $temperature
+           
+# PBC
+wrapWater               on
+wrapAll			on
+wrapNearest		on
+xstFile                 $outname.xst  
+xstFreq                 1000
+
+# Output
+outputname              $outname
+dcdfile                 $outname.dcd
+restartname             $outname.restart
+restartfreq             500 
+dcdfreq                 500
+binaryoutput            yes 
+outputEnergies          500
